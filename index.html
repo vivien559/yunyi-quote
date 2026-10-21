@@ -1,0 +1,597 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>报价查询</title>
+<style>
+:root{--blue:#2f7cf6;--blue-d:#1e63d6;--soft:#eef4ff;--text:#2b3440;--sub:#8a94a6;--line:#e8edf5}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;background:#f5f9ff;color:var(--text);font-size:15px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.hidden{display:none!important}
+.topwrap{max-width:520px;margin:0 auto;background:linear-gradient(180deg,#b9d6ff 0%,#d7e7ff 42%,#ecf4ff 76%,#f5f9ff 100%);padding:14px 16px 66px}
+.hd{display:flex;align-items:center;gap:10px}
+.back{width:34px;height:34px;border:0;background:rgba(255,255,255,.72);border-radius:50%;font-size:20px;color:var(--text);cursor:pointer;line-height:1;flex:none;padding-bottom:2px}
+.hd h1{font-size:19px;font-weight:700}
+.hd p{font-size:12px;color:var(--sub);margin-top:2px}
+.steps{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}
+.step{font-size:11px;color:#7d92ad;background:rgba(255,255,255,.55);padding:4px 10px;border-radius:999px}
+.step.on{background:var(--blue);color:#fff}
+.page{max-width:520px;margin:-54px auto 0;padding:0 16px calc(132px + env(safe-area-inset-bottom))}
+.card{background:#fff;border-radius:16px;box-shadow:0 6px 20px rgba(47,108,214,.08);padding:18px;margin-bottom:14px}
+.card-title{font-size:16px;font-weight:700;margin-bottom:12px}
+.muted{font-size:13px;color:var(--sub);margin-top:8px}
+.cat-item{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:14px;padding:13px 12px;margin-bottom:10px;cursor:pointer;background:#fff}
+.cat-item.selected{border-color:var(--blue);background:var(--soft)}
+.cat-ico{width:40px;height:40px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none;color:var(--blue)}
+.cat-ico svg{width:22px;height:22px}
+.cat-name{flex:1;font-size:15px;font-weight:600}
+.check{width:24px;height:24px;border-radius:50%;border:1.5px solid #c9d5e6;flex:none;display:flex;align-items:center;justify-content:center;color:#fff}
+.check svg{width:13px;height:13px;opacity:0}
+.cat-item.selected .check{background:var(--blue);border-color:var(--blue)}
+.cat-item.selected .check svg{opacity:1}
+.btn{border:0;background:var(--blue);color:#fff;font-size:15px;font-weight:600;padding:13px 18px;border-radius:999px;cursor:pointer;width:100%;font-family:inherit}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.ghost{background:var(--soft);color:var(--blue-d)}
+.flabel{display:block;font-size:13px;color:var(--sub);margin:12px 0 6px}
+.input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;background:#fff;color:var(--text);outline:none;font-family:inherit}
+.input:focus{border-color:var(--blue)}
+select.input{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a94a6' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.err{color:#e05656;font-size:13px;margin-top:10px}
+.wx-hint{background:#fff7e6;border:1px solid #ffe1a8;color:#a9702a;font-size:12px;border-radius:12px;padding:10px 12px;margin-bottom:12px;line-height:1.5}
+.foot-note{font-size:12px;color:var(--sub);text-align:center;padding:6px 0 2px}
+.card.table-card{padding:0;overflow:hidden}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{padding:12px 6px;background:var(--soft);color:#41546e;font-size:12px;font-weight:600;text-align:center;border-bottom:1px solid var(--line)}
+th.c-m.on{color:var(--blue);font-weight:700;background:#e0edff}
+th[data-mid]{cursor:pointer}
+td{padding:11px 6px;border-bottom:1px solid #f0f4fa;text-align:center}
+td.c-it,th.c-it{text-align:left;padding-left:14px;font-weight:600;white-space:nowrap;max-width:112px;overflow:hidden;text-overflow:ellipsis}
+td.num{font-variant-numeric:tabular-nums;color:#41546e;white-space:nowrap}
+td.c-m.on{background:#f2f7ff}
+.dash{color:#c3ccda}
+.r-base td{font-weight:700}
+.r-g td{background:#f8fbff;padding:7px 14px;text-align:left;border-bottom:1px solid #f0f4fa}
+.g-l{font-size:11px;color:var(--sub);font-weight:600}
+.g-l em{font-style:normal;font-size:10px;color:var(--blue);background:var(--soft);padding:1px 7px;border-radius:6px;margin-left:6px}
+.toggle{position:relative;width:44px;height:25px;border-radius:13px;background:#d5deea;cursor:pointer;transition:background .18s;margin:0 auto}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(20,40,80,.25);transition:left .18s}
+.toggle.on{background:var(--blue)}
+.toggle.on::after{left:22px}
+.toggle.dis{opacity:.35;pointer-events:none}
+td.empty{padding:44px 16px;color:var(--sub);text-align:center;font-size:13px}
+.sumbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;box-shadow:0 -6px 24px rgba(30,80,180,.12);padding:10px 16px calc(12px + env(safe-area-inset-bottom))}
+.sumbar .inner{max-width:520px;margin:0 auto}
+.sum-picked{font-size:12px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px}
+.sum-row{display:flex;align-items:center;gap:12px}
+.sum-total{flex:1;font-size:13px;color:var(--sub);white-space:nowrap}
+.sum-total b{font-size:22px;color:var(--text);margin-left:6px;font-variant-numeric:tabular-nums}
+.sum-row .btn{width:auto;padding:12px 22px;flex:none}
+.mwrap{position:fixed;inset:0;background:rgba(18,35,66,.5);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.mcard{width:100%;max-width:520px;background:#fff;border-radius:22px 22px 0 0;padding:18px 18px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto}
+.mbody{position:relative}
+.m-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.m-head h2{font-size:18px}
+.m-x{border:0;background:#f1f5fb;width:30px;height:30px;border-radius:50%;font-size:16px;color:var(--sub);cursor:pointer;line-height:1}
+.m-meta{background:var(--soft);border-radius:12px;padding:10px 14px;display:grid;gap:7px;margin-bottom:8px}
+.m-meta div{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.m-meta span{color:var(--sub);flex:none}
+.m-meta b{font-weight:600;text-align:right;word-break:break-all}
+.m-lines{border-top:1px solid var(--line)}
+.m-line{display:flex;justify-content:space-between;gap:12px;padding:11px 2px;border-bottom:1px dashed #edf2f9;font-size:14px}
+.m-line b{font-variant-numeric:tabular-nums;flex:none}
+.m-total{display:flex;justify-content:space-between;align-items:center;padding:14px 2px 4px}
+.m-total span{color:var(--sub);font-size:14px}
+.m-total b{font-size:24px;color:var(--blue-d);font-variant-numeric:tabular-nums}
+.m-btns{display:flex;gap:10px;margin-top:14px}
+.m-btns .btn{flex:1;padding:12px}
+.m-wm{position:absolute;inset:0;pointer-events:none;z-index:10;background-repeat:repeat}
+#pngImg{width:100%;border-radius:12px;border:1px solid var(--line);margin-top:4px}
+.hint{font-size:12px;color:var(--sub);margin-top:10px;line-height:1.6}
+.hint.center{text-align:center}
+.toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%) translateY(10px);background:rgba(23,42,74,.92);color:#fff;font-size:13px;padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:200;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div class="topwrap">
+  <header class="hd">
+    <button class="back hidden" id="back" aria-label="返回">‹</button>
+    <div><h1 id="hdTitle">报价查询</h1><p id="hdSub">客户端</p></div>
+  </header>
+  <div class="steps">
+    <span class="step on" id="step1">① 选择品类</span>
+    <span class="step" id="step2">② 输入密码</span>
+    <span class="step" id="step3">③ 选配报价</span>
+  </div>
+</div>
+<main class="page">
+  <div id="wxHint" class="wx-hint hidden">当前疑似微信内置浏览器：建议使用 Chrome / Edge / Safari 等独立浏览器打开，微信内可能出现解密异常。</div>
+
+  <section id="scr1">
+    <div class="card">
+      <p class="card-title">选择你要获取的报价</p>
+      <div id="catList"></div>
+      <button class="btn" id="btnNext1" disabled style="margin-top:6px">继续</button>
+    </div>
+    <p class="foot-note" id="verNote" style="display:none"></p>
+  </section>
+
+  <section id="scr2" class="hidden">
+    <div class="card">
+      <p class="card-title">输入角色密码</p>
+      <label class="flabel">选择角色</label>
+      <select id="roleSel" class="input"></select>
+      <label class="flabel">角色密码</label>
+      <input id="pwInput" class="input" type="password" placeholder="请输入该角色的专属密码" enterkeyhint="go" autocomplete="off">
+      <p class="err hidden" id="pwErr">密码错误，请检查后重试</p>
+      <button class="btn" id="btnUnlock" style="margin-top:14px">确认并查看报价</button>
+    </div>
+  </section>
+
+  <section id="scr3" class="hidden">
+    <div class="card table-card">
+      <div class="tbl-wrap"><table id="cfgTable"></table></div>
+    </div>
+  </section>
+</main>
+
+<div class="sumbar hidden" id="sumbar"><div class="inner">
+  <div class="sum-picked" id="sumPicked">已选：—</div>
+  <div class="sum-row">
+    <div class="sum-total">合计总价<b id="sumTotal">¥0</b></div>
+    <button class="btn" id="btnQuote" disabled>生成报价单</button>
+  </div>
+</div></div>
+
+<div class="mwrap hidden" id="mwrap">
+  <div class="mcard" id="mcard">
+    <div class="mbody" id="mBody">
+      <div class="m-head"><h2>报价单</h2><button class="m-x" id="mClose">×</button></div>
+      <div class="m-meta">
+        <div><span>报价品类</span><b id="mCat"></b></div>
+        <div><span>客户角色</span><b id="mRole"></b></div>
+        <div><span>报价生成时间</span><b id="mTime"></b></div>
+      </div>
+      <div class="m-lines" id="mLines"></div>
+      <div class="m-total"><span>合计总价</span><b id="mTotal"></b></div>
+      <div class="m-btns">
+        <button class="btn ghost" id="btnCopy">复制报价单</button>
+        <button class="btn" id="btnImg">导出图片</button>
+      </div>
+      <div class="m-wm" id="mWm" style="display:none"></div>
+    </div>
+    <div class="mbody hidden" id="pngBody">
+      <div class="m-head"><h2>报价单图片</h2><button class="m-x" id="pngClose">×</button></div>
+      <img id="pngImg" alt="报价单图片">
+      <div class="m-btns">
+        <a class="btn" id="pngDl" href="#">下载图片</a>
+        <button class="btn ghost" id="pngBack">返回</button>
+      </div>
+      <p class="hint center">Android / 电脑：点击「下载图片」保存。<br>iPhone / iOS：请长按上方图片，选择「存储图像」。</p>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>window.__QDATA__ = {"enc":{"iter":150000},"meta":{"appTitle":"飞机配置报价","versionNote":"2026-10 测试版","watermark":"云翼无人机科技有限公司","roles":{"boss":{"name":"老板"},"agent":{"name":"供应商代理"},"customer":{"name":"客户"}},"categories":[{"id":"c1","name":"整机机型配置报价","type":"machine"},{"id":"c2","name":"挂载配件单独报价","type":"items"},{"id":"c3","name":"机场配套单独报价","type":"items"}]},"ciphers":{"boss":"LkH38zpm0lw5GpLluO25HA==.bEKYEcJQxyipV4zy.TGwEVgFYhzyeQgAJLoAPWKnz4tVn5WHsxfTLaYpr8fCSJ4gUIv/MZ677nY1y2drU4F3Z8P7BQ+SPJy/ZfKfaneHzsUq9Y7gEpyyUXD3sWU8daCSRyJ+ek3wzKEQdyWO/PkeRjKBB30PmxYBulGaLpMuFM2wmWX0oroS/dUn5fTc2V3MjeoTgVVi8VnSdLFPFg/uIxU300bRFwZsum2voY3XlxI1Fry/ozKtrpmUZpuTlyuRotRlJaFu///vulc+DwW2n0m0GfqEy7VyIEgv8/SlaD/FXTR8nadeshhB17ggQ9acBpyAHsI1TYuZmYLMZpMoQgbkHQCm64d4RQ8cuB7P0leS7o6QCl4OJv73e37L3MkD2B4e7s3H6MpnLjTcF5D2xPVzTU+9S2yc6itV3s+c2hrRRXBHWCcY+CBz9vo6Wdic3W6SQXtimrJv9UzIiAngokFo20LKMkfqZqRzrLNhdIlwQ2MmZsoF6kL4CNfhwM2v7yImfaVrYqQQdJ1WRAv+IL4SsbZV6d83yCJyOCYzMVEglqsobqc55gt/G854ZYK/Cq4w8r+ybR0a5ULG2cECHTBEorjo9TLp4bM9GNWMvBwy5WwAGdFgesABzdKpfWaEItxzUCvPUXGs/mpp+KmkhyQTC15ypRlkWVRyVdxt4ip4shvezZe4Rxb7WAhXDCjSNpdhtK4jhb0apAwGnu1Z/m+jYnM0CHbWqQiSmIDmQDeVj/wTg5KGzCgdnRKRU4CYpkwDhE/mNDflhLxl7qh/lUBUYhSxXkFPSoqrSyn+TjX2tEWDQI61FqGQS2OG8d6EJ8M3+/b8QG3UzKK0Std0QHwczUYR3o22yuNdZG9+SPCz28S9+tFPa2Pz2uERw46yBr6hNmUqh5cY9kBUWIB0YmOqLJUwOJ+95BTr37K/RnHb1OUxh2I4G4LXQrnfr1tGpKhnbJ6ohm+dCI6lcBxdn1lNXQG3kpF2IMmMQwKp+HilRxWSMVp6oEfo2Pnp0OZYv7Tsj32JrwMJxN8RnI8NDMt+AUaN8ok1l+RPbEZmq2VZNzht1zDrt69qvFF6NFtbgqWvWOCUa6bf220hG2SwC2+GYPaYN4kfei1hJyf8NKEaXI98IsoHcMiybxtISxWRszWbtScQxyldB/bMH5LoBFlUoNr20KSWDTWgF4aTSaXzYzUzJlOXFNkERY8iQ7wyQQ+5blIEtIiUKsrU6LmcDa1+yDetp0kGquLonk5DVnPbmPAe+lsCCh5nRO4KaaO4TEliZBtjwupBy27Xi4l2BuGNz7doN/jMgD4xuKGOhuVdKtZFOWUoG8Kkc3xb4sR6D3741N44DFHFZ0vcBrQ==","agent":"mbs3vzJ+Sbdgok8aN702+A==.mo8suKp0KzTNpDQg.QMwP3d/jYKNMDBcdjlo6/PMtBW/BLh6bJraM6kp3UzmSUH5W3g7mIw1qprZHcW4v4sq+xS5M4kCyTPbkcm9vP+EDG+OTXJF7eSKuT5zmzXElDSSyRDydsvw0CQHVsczQVgkZ2Qfa8seyVUWm4IHYlVCDlv2+IA3peIjmRxCwzr2gRSsaE+3gNKBtFK6f3Nml/qbxfUbnRM0LamOn4Jt3G/uaNB+8LsDkFUdzkiZqFHEP3ByOV0oHDhGqyd9029z6QCNFqqFuhMH45oW9xZ6knvy/OF8gkoxop33Rc/52V4uZbrWxN0gPEY6d0jo9DItq+h6eDRwttc/RPGbNygn9A9NyVO53jybmfvBMwaHg11rVH0YiUbRcpZ6gjo7F/GbXVELgdQmHFyxrjL9xgKVlqL4t/uc2wG/u92Yub9QsyyCxABK0/Dhri8TYMXDKKoBYIS6c4r8ra7eYxgGVKlVNLn7coKSPwm8gOAcgtkZ6CkQGKu3dABjc32MIDCYhhx3r2z3WSszyx/f3UqBAllj0pb0g5rnY5ZYcnl00gRdl5ZnCBZZE/Nu34l/D3txYuj3Zuy8OGfib/hBabEb0NyCHQ41Ae4+X/S35XlqDMsl03ilnOc0oQsqvOwNKVyOl3Gv/uT/kVU81I61usKpo0cQWJD37RlaIe69rh4VvK/PQFvUl/oa7D91D6+dcbD5/siSppvxrcg0Zy8Q4EzKhfv4fXMyYZl9B3OUBo9DdPrn429VllE+RCGRIBRZp7cW3mreHZsfUsaQYZnywrH8AArw82SZS/MLYad8nONJyY0hqsVcIqXiFzTwkeoZxjtnCFLaPMznnwCQksXpjEtxNOhUVX0xIkdYFnqF0YGfT+zcp79/hWyEYQtjO+xau0yUCS1bbaF2qUKkJZyfKqg4O2N61PnrcKZR6ZAU6nOVpF+FuVh3nozr5KOhiooo1+wUuGqozxmv4S633COU3bfXB/LR5Jio5NJwU2rfm1NTNHlWh+LkVWg/FOB2lrAMpcOQiUYbUKcYCrUj4sPf4TxPLLaaeMpsu3nk2KTZwJJxbmDCc4wxDbxJR3rZkODoFuDHkbDhCqnDVVC9npdscO75RGJMTccGrvP6XEb8Pfb6uQphfDWZ4aDcjcxOApMJL7KS9DDr6tF07WTTTQEZfwb7aTO/rMEx+i7V7HGFTrvus5rjSjVdw8+TMU9LXfJuUuKOD10QMFqBndJGpzeh0w/RpU/vF1FH7CM0T4Dynjfz1aC4MA+MZL13nJcRugN7DC0QF5K/ofBNRHwDqrhLYhEdCREjEN6OKkjVah+uw8rhfCdsJvH/4mrVyofczEJdX5HCrPjm9XW+Uuw==","customer":"CbVp6EwNFTSj+LpCicTHGw==.abB81CnyUxL0Zq2Y.Pllvnpf3y+GB8VIYTnuEX2xjLHt1wAgdWVu/tkouKdv1UBkrxETxcFGwMnBA1Vco0dTW+yEN847wZz8ncN4bfh/a04qboeKScqNUNdDsHOso5Ralt7KAIvMyBv3hQ50naCIMqr456aY+YB4bJcoNabzimT0A5Z8C+0PP9VxEvZe1/xaafOTshxY+y+70+htgmRmrqHQHgpAeQ3coiVz9uUPqkt+/46Y/Gt0bH/0dzTtD5SDQxJRIuSfl9BkAYRUQWcl6yXBIiL5uTA7hDC+FrCnugUsG2qrg8H9Aa6rsZPPe24SIGqBihbo5hMik9U29U5qmi0iAJdfFFjKUiKlVWe92L7C2EsOsvvU6hCAym/NH8UytDlTT5/wUZ6D4IDpOR2UGhrdofPM8nR/teTxnHsj7KGGgmHPoYlhxQBbRBzdOy18aqtPJJAIuClsr6mRihyxSYcIYEmQetOojunO3QHGXEt8+lm6un0soCT2Gb2eccKwgyDMb0CyibUC1ApxtgRXf8iPh8B9kRV8D45wD8HJOGe94OulNGUDwvwW+Kxxdz4uFtNYbZSPlGxVZLbUimK+72DUOtkdY5mua+XEeeLjoBqLmC1HrB1GLOC/xijnXOVzVkBrjPAl2rTN06VltkgvIg6Sjd1rcBXzj73htAcV+5/TApeWAAoX0fTuLWFQPg9pwooCaGHeqSeG+O+eSe+O6aBO8ZIaypGLyOD8FdD9EYEDAXYkL3vzBNmEsmMWDOSFDRXAbzSpqE0Bxislg++WfUfmh4dl4EeVzDvPBz+sKGAlRJu/MbqAWIgMmDu+93DY1Bn/4+HVa+RzssrtXWLxVUJV/xOOw68IIMcH7RSz4fEu2SFz71r/RLmzrvsNEqg0d/ddvAQcCIHa69v5istPjkKQ57i1DJybHPmlkWecfo074fYHp1nqWcbxt6bSdF2JTi6+vJgOAVb7D/QDsxwVemgPIWxsw8i96L4Y7b2/3s4FMs3Qqwj00TVfIeJ24FUQFJ+Xp0e9RbqAJ0sgs7FabKORZtkpLSPmDjDLB4KizXIpDNSdeDjrVNgyLyEOhrcsKEzN9jdOIZVweRWXZ7YQ01bGH5F3eipAg7eQSH6jKTBHm9V6rzzh6O733u/C86WrcYFn4fP6DA1YBBviDu7Yluahc/PLRMonfjXN4LVlqbnu44x3jVzbe5WOJkWohxGjJ83NomaX5LjEIDuJl4Ycj/FkfYOwAWjBuwECTHTkdENDOVZ0ZVNO3Ht7uJhoJzkthdd3Uj9S1hofnKHgcf9FnqGlP8kwcFtyVX9Zps62EKOIX81anjit7cqQ1biVXcn7WDPCHTLG05uFVD9CJVyCzQhQ="}};</script>
+<script>
+(function(){
+'use strict';
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function num(v){v=parseFloat(v);return isFinite(v)?v:0}
+function fmt(v){v=num(v);var s=Number.isInteger(v)?v.toLocaleString('en-US'):v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});return '¥'+s}
+function p2(n){return (n<10?'0':'')+n}
+function nowStr(){var d=new Date();return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+' '+p2(d.getHours())+':'+p2(d.getMinutes())}
+function stamp(){var d=new Date();return ''+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'_'+p2(d.getHours())+p2(d.getMinutes())}
+
+var D=window.__QDATA__;
+if(!D||!D.meta||!D.ciphers){
+  $('scr1').innerHTML='<div class="card"><p class="card-title">页面暂无报价数据</p><p class="muted">请联系管理员通过配置页重新生成分发页。</p></div>';
+  $('btnNext1').style.display='none';
+  return;
+}
+var meta=D.meta, ciphers=D.ciphers, iter=(D.enc&&D.enc.iter)||150000;
+document.title=meta.appTitle||'报价查询';
+$('hdTitle').textContent=meta.appTitle||'报价查询';
+if(meta.versionNote){$('verNote').textContent='版本备注：'+meta.versionNote;$('verNote').style.display='block'}
+if(/MicroMessenger/i.test(navigator.userAgent))$('wxHint').classList.remove('hidden');
+
+document.addEventListener('contextmenu',function(e){e.preventDefault()});
+document.addEventListener('dragstart',function(e){e.preventDefault()});
+document.addEventListener('selectstart',function(e){var t=e.target.tagName;if(t==='INPUT'||t==='SELECT'||t==='TEXTAREA')return;e.preventDefault()});
+
+var st={cat:null,role:null,data:null,machine:null,sel:{}};
+
+var ICONS=[
+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3L3 10.5l6.2 2.3L11.5 19 21 3z"/><path d="M9.2 12.8L21 3"/></svg>',
+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8.2L12 3 3 8.2v7.6L12 21l9-5.2z"/><path d="M3.3 8.3L12 13l8.7-4.7"/><path d="M12 13v7.8"/></svg>',
+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21h14"/><path d="M7 21v-6.5a5 5 0 0110 0V21"/><path d="M12 4v3.5"/><path d="M9.5 5.5h5"/></svg>',
+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4L13.4 20.6a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8z"/><circle cx="7.5" cy="7.5" r="1.3"/></svg>'
+];
+(function(){
+  var h='';
+  meta.categories.forEach(function(c,i){
+    h+='<div class="cat-item" data-id="'+c.id+'"><div class="cat-ico">'+ICONS[i%ICONS.length]+'</div><div class="cat-name">'+esc(c.name)+'</div><div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5L19.5 7"/></svg></div></div>';
+  });
+  $('catList').innerHTML=h;
+})();
+$('catList').addEventListener('click',function(e){
+  var it=e.target.closest('.cat-item');if(!it)return;
+  st.cat=it.dataset.id;
+  this.querySelectorAll('.cat-item').forEach(function(x){x.classList.toggle('selected',x===it)});
+  $('btnNext1').disabled=false;
+});
+$('btnNext1').onclick=function(){go(2)};
+$('back').onclick=function(){
+  if(!$('scr3').classList.contains('hidden'))go(2);
+  else if(!$('scr2').classList.contains('hidden'))go(1);
+};
+function go(n){
+  $('scr1').classList.toggle('hidden',n!==1);
+  $('scr2').classList.toggle('hidden',n!==2);
+  $('scr3').classList.toggle('hidden',n!==3);
+  $('sumbar').classList.toggle('hidden',n!==3);
+  $('back').classList.toggle('hidden',n===1);
+  ['step1','step2','step3'].forEach(function(id,i){$(id).classList.toggle('on',i+1===n)});
+  $('hdSub').textContent=(n===3&&st.role)?meta.roles[st.role].name:'客户端';
+  if(n===3){renderConfig()}
+  if(n===2){setTimeout(function(){$('pwInput').focus()},80)}
+  window.scrollTo(0,0);
+}
+
+(function(){
+  var h='';
+  ['boss','agent','customer'].forEach(function(k){var r=meta.roles[k]||{name:k};h+='<option value="'+k+'">'+esc(r.name)+'</option>'});
+  $('roleSel').innerHTML=h;
+})();
+
+function b64(buf){var s='';var b=new Uint8Array(buf);for(var i=0;i<b.length;i+=0x8000){s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000))}return btoa(s)}
+function un64(str){var bin=atob(str);var b=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return b}
+var TE=new TextEncoder(),TD=new TextDecoder();
+async function tryUnlock(){
+  var k=$('roleSel').value, pw=$('pwInput').value;
+  $('pwErr').classList.add('hidden');
+  $('btnUnlock').disabled=true;$('btnUnlock').textContent='解密校验中…';
+  try{
+    if(!window.crypto||!crypto.subtle)throw{__ui:1,msg:'当前浏览器不支持 Web Crypto，请使用 Chrome / Edge / Safari 打开'};
+    var parts=String(ciphers[k]).split('.');
+    if(parts.length!==3)throw{__ui:1,msg:'数据格式异常，请联系管理员重新生成分发页'};
+    var salt=un64(parts[0]),iv=un64(parts[1]),ct=un64(parts[2]);
+    var base=await crypto.subtle.importKey('raw',TE.encode(pw),'PBKDF2',false,['deriveKey']);
+    var key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+    var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,ct);
+    st.data=JSON.parse(TD.decode(pt));st.role=k;st.sel={};st.machine=null;
+    go(3);
+  }catch(e){
+    var msg=(e&&e.__ui)?e.msg:'密码错误，请检查后重试';
+    $('pwErr').textContent=msg;
+    $('pwErr').classList.remove('hidden');
+  }
+  $('btnUnlock').disabled=false;$('btnUnlock').textContent='确认并查看报价';
+}
+$('btnUnlock').onclick=tryUnlock;
+$('pwInput').addEventListener('keydown',function(e){if(e.key==='Enter')tryUnlock()});
+
+function metaCat(){return meta.categories.find(function(c){return c.id===st.cat})}
+function dataCat(){return st.data?st.data.categories.find(function(c){return c.id===st.cat}):null}
+function groupsOf(opts){
+  var gmap={},order=[];
+  (opts||[]).forEach(function(o){
+    var key=(o.groupType||'multi')+'|'+(o.group||o.name);
+    if(!gmap[key]){gmap[key]={name:o.group||o.name,type:o.groupType||'multi',members:[]};order.push(key)}
+    gmap[key].members.push(o);
+  });
+  return order.map(function(k){return gmap[k]});
+}
+function optRow(o,ms,cur){
+  var h='<tr class="r-opt"><td class="c-it">'+esc(o.name)+'</td>';
+  ms.forEach(function(m){
+    var om=(m.options||[]).find(function(x){return x.id===o.id});
+    h+='<td class="c-m num'+(m.id===st.machine?' on':'')+'">'+(om?fmt(om.price):'<span class="dash">—</span>')+'</td>';
+  });
+  var on=!!st.sel[o.id];
+  var dis=!(cur&&(cur.options||[]).some(function(x){return x.id===o.id}));
+  if(!dis&&(o.groupType||'multi')==='single'){
+    var otherOn=(cur.options||[]).some(function(x){return x.id!==o.id&&(x.groupType||'multi')==='single'&&(x.group||x.name)===(o.group||o.name)&&st.sel[x.id]});
+    if(otherOn)dis=true;
+  }
+  h+='<td class="c-tg"><div class="toggle'+(on?' on':'')+(dis?' dis':'')+'" data-tg="'+o.id+'"></div></td></tr>';
+  return h;
+}
+function renderConfig(){
+  var mc=metaCat(),dc=dataCat();
+  var tbl=$('cfgTable');
+  if(!mc||!dc){tbl.innerHTML='<tr><td class="empty">暂无数据</td></tr>';updateSum();return}
+  var h='';
+  if(mc.type==='machine'){
+    var ms=dc.machines||[];
+    if(!ms.length){tbl.innerHTML='<tr><td class="empty">该品类暂无机型数据，请联系管理员</td></tr>';updateSum();return}
+    if(!st.machine)st.machine=ms[0].id;
+    h+='<thead><tr><th class="c-it">项目</th>';
+    ms.forEach(function(m){h+='<th class="c-m'+(m.id===st.machine?' on':'')+'" data-mid="'+m.id+'">'+esc(m.name)+'</th>'});
+    h+='<th class="c-tg" style="width:60px">选配</th></tr></thead><tbody>';
+    h+='<tr class="r-base"><td class="c-it">基础价</td>';
+    ms.forEach(function(m){h+='<td class="c-m num'+(m.id===st.machine?' on':'')+'">'+fmt(m.price)+'</td>'});
+    h+='<td></td></tr>';
+    var seen={},rows=[];
+    ms.forEach(function(m){(m.options||[]).forEach(function(o){if(!seen[o.id]){seen[o.id]=1;rows.push(o)}})});
+    var cur=ms.find(function(m){return m.id===st.machine});
+    var placed={};
+    if(cur){
+      groupsOf(cur.options).forEach(function(g){
+        h+='<tr class="r-g"><td colspan="'+(ms.length+2)+'" class="g-l">'+esc(g.name)+'<em>'+(g.type==='single'?'单选互斥':'多选叠加')+'</em></td></tr>';
+        g.members.forEach(function(o){h+=optRow(o,ms,cur);placed[o.id]=1});
+      });
+    }
+    rows.forEach(function(o){if(!placed[o.id])h+='<tr class="r-g"><td colspan="'+(ms.length+2)+'" class="g-l">其他机型选配<em>多选叠加</em></td></tr>'+optRow(o,ms,cur)});
+    h+='</tbody>';
+  }else{
+    var items=dc.items||[];
+    if(!items.length){tbl.innerHTML='<tr><td class="empty">该品类暂无单品数据，请联系管理员</td></tr>';updateSum();return}
+    h+='<thead><tr><th class="c-it">项目</th><th class="c-m" style="width:45%">价格</th><th class="c-tg" style="width:60px">选配</th></tr></thead><tbody>';
+    items.forEach(function(it){
+      var on=!!st.sel[it.id];
+      h+='<tr class="r-opt"><td class="c-it">'+esc(it.name)+'</td><td class="c-m num">'+fmt(it.price)+'</td><td class="c-tg"><div class="toggle'+(on?' on':'')+'" data-tg="'+it.id+'"></div></td></tr>';
+    });
+    h+='</tbody>';
+  }
+  tbl.innerHTML=h;
+  updateSum();
+}
+$('cfgTable').addEventListener('click',function(e){
+  var mc=metaCat();if(!mc)return;
+  var th=e.target.closest('th[data-mid]');
+  if(th){
+    st.machine=th.dataset.mid;
+    var dc=dataCat();
+    var cur=dc.machines.find(function(m){return m.id===st.machine});
+    Object.keys(st.sel).forEach(function(k){
+      if(!cur||(cur.options||[]).every(function(o){return o.id!==k}))delete st.sel[k];
+    });
+    renderConfig();
+    return;
+  }
+  var tg=e.target.closest('.toggle');
+  if(tg&&!tg.classList.contains('dis'))toggleOpt(tg.dataset.tg);
+});
+function toggleOpt(id){
+  var mc=metaCat();if(!mc)return;
+  if(mc.type==='machine'){
+    var dc=dataCat();
+    var cur=dc.machines.find(function(m){return m.id===st.machine});
+    var o=(cur.options||[]).find(function(x){return x.id===id});
+    if(!o)return;
+    if((o.groupType||'multi')==='single'){
+      (cur.options||[]).forEach(function(x){
+        if(x.id!==id&&(x.groupType||'multi')==='single'&&(x.group||x.name)===(o.group||o.name))delete st.sel[x.id];
+      });
+      if(st.sel[id])delete st.sel[id];else st.sel[id]=1;
+    }else{
+      if(st.sel[id])delete st.sel[id];else st.sel[id]=1;
+    }
+  }else{
+    if(st.sel[id])delete st.sel[id];else st.sel[id]=1;
+  }
+  renderConfig();
+}
+function calcTotal(){
+  var mc=metaCat(),dc=dataCat();if(!dc)return 0;
+  if(mc.type==='machine'){
+    var cur=dc.machines.find(function(m){return m.id===st.machine});if(!cur)return 0;
+    var t=num(cur.price);
+    (cur.options||[]).forEach(function(o){if(st.sel[o.id])t+=num(o.price)});
+    return t;
+  }
+  var t2=0;
+  (dc.items||[]).forEach(function(i){if(st.sel[i.id])t2+=num(i.price)});
+  return t2;
+}
+function pickedText(){
+  var mc=metaCat(),dc=dataCat();if(!dc)return '—';
+  if(mc.type==='machine'){
+    var cur=dc.machines.find(function(m){return m.id===st.machine});
+    if(!cur)return '未选择机型';
+    var parts=[cur.name];
+    (cur.options||[]).forEach(function(o){if(st.sel[o.id])parts.push(o.name)});
+    return parts.join(' + ');
+  }
+  var parts2=[];
+  (dc.items||[]).forEach(function(i){if(st.sel[i.id])parts2.push(i.name)});
+  return parts2.length?parts2.join(' + '):'未选择单品';
+}
+function updateSum(){
+  $('sumPicked').textContent='已选：'+pickedText();
+  $('sumTotal').textContent=fmt(calcTotal());
+  var mc=metaCat();
+  var ok=mc?(mc.type==='machine'?!!st.machine:Object.keys(st.sel).length>0):false;
+  $('btnQuote').disabled=!ok;
+}
+
+var quoteLines=[],quoteTotal=0;
+$('btnQuote').onclick=function(){
+  var mc=metaCat(),dc=dataCat();if(!mc||!dc)return;
+  quoteLines=[];
+  if(mc.type==='machine'){
+    var cur=dc.machines.find(function(m){return m.id===st.machine});
+    if(!cur)return;
+    quoteLines.push({name:cur.name+' · 基础价',amt:num(cur.price)});
+    (cur.options||[]).forEach(function(o){if(st.sel[o.id])quoteLines.push({name:o.name,amt:num(o.price)})});
+  }else{
+    (dc.items||[]).forEach(function(i){if(st.sel[i.id])quoteLines.push({name:i.name,amt:num(i.price)})});
+  }
+  quoteTotal=calcTotal();
+  $('mCat').textContent=mc.name;
+  $('mRole').textContent=(meta.roles[st.role]||{name:'—'}).name;
+  $('mTime').textContent=nowStr();
+  var lh='';
+  quoteLines.forEach(function(l){lh+='<div class="m-line"><span>'+esc(l.name)+'</span><b>'+fmt(l.amt)+'</b></div>'});
+  $('mLines').innerHTML=lh;
+  $('mTotal').textContent=fmt(quoteTotal);
+  var wm=meta.watermark||'';
+  var wmEl=$('mWm');
+  if(wm){
+    var svg='<svg xmlns="http://www.w3.org/2000/svg" width="340" height="340"><text x="170" y="170" fill="rgba(47,124,246,0.09)" font-size="36" font-family="sans-serif" text-anchor="middle" transform="rotate(-30 170 170)">'+esc(wm)+'</text></svg>';
+    wmEl.style.backgroundImage='url("data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)+'")';
+    wmEl.style.display='block';
+  }else{
+    wmEl.style.display='none';
+  }
+  $('mBody').classList.remove('hidden');
+  $('pngBody').classList.add('hidden');
+  $('mcard').scrollTop=0;
+  $('mwrap').classList.remove('hidden');
+};
+function closeModal(){$('mwrap').classList.add('hidden')}
+$('mClose').onclick=closeModal;
+$('pngClose').onclick=closeModal;
+$('mwrap').addEventListener('click',function(e){if(e.target===this)closeModal()});
+$('pngBack').onclick=function(){$('pngBody').classList.add('hidden');$('mBody').classList.remove('hidden');$('mcard').scrollTop=0};
+
+function copyText(t){
+  return navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t).then(function(){return true}).catch(function(){return legacyCopy(t)}):Promise.resolve(legacyCopy(t));
+}
+function legacyCopy(t){
+  var ta=document.createElement('textarea');
+  ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.focus();ta.select();
+  var ok=false;
+  try{ok=document.execCommand('copy')}catch(e){}
+  ta.remove();return ok;
+}
+function padCjk(s){
+  s=String(s);var w=0;
+  for(var i=0;i<s.length;i++)w+=s.charCodeAt(i)>255?2:1;
+  var n=Math.max(0,24-w);
+  return s+new Array(n+1).join(' ');
+}
+var toastTimer=null;
+function toast(msg){
+  var t=$('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove('show')},2000);
+}
+$('btnCopy').onclick=function(){
+  var mc=metaCat();
+  var t=['【'+(meta.appTitle||'报价')+' · 报价单】',
+    '报价品类：'+mc.name,
+    '客户角色：'+(meta.roles[st.role]||{name:'—'}).name,
+    '生成时间：'+nowStr(),
+    '------------------------------'];
+  quoteLines.forEach(function(l){t.push(padCjk(l.name)+'  '+fmt(l.amt))});
+  t.push('------------------------------');
+  t.push('合计总价：'+fmt(quoteTotal));
+  copyText(t.join('\n')).then(function(ok){
+    toast(ok?'已复制，可直接粘贴到微信':'复制失败，请手动选择文字复制');
+  });
+};
+
+function roundRect(x,a,b,w,h,r){
+  x.moveTo(a+r,b);
+  x.arcTo(a+w,b,a+w,b+h,r);
+  x.arcTo(a+w,b+h,a,b+h,r);
+  x.arcTo(a,b+h,a,b,r);
+  x.arcTo(a,b,a+w,b,r);
+  x.closePath();
+}
+var CF='"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC","WenQuanYi Micro Hei",sans-serif';
+function drawCard(lines,total,catName,roleName,timeStr){
+  var S=3,Wd=375,pad=32;
+  var headH=92,metaY0=headH+30,metaGap=27,divY=metaY0+metaGap*2+16;
+  var rowsTop=divY+8,rowH=44;
+  var div2Y=rowsTop+lines.length*rowH+8,totalCY=div2Y+32,bot=34;
+  var Hd=totalCY+bot;
+  var c=document.createElement('canvas');
+  c.width=Wd*S;c.height=Hd*S;
+  var x=c.getContext('2d');
+  x.scale(S,S);
+  x.beginPath();roundRect(x,0,0,Wd,Hd,20);x.fillStyle='#ffffff';x.fill();
+  x.save();
+  x.beginPath();roundRect(x,0,0,Wd,Hd,20);x.clip();
+  var g=x.createLinearGradient(0,0,0,headH);
+  g.addColorStop(0,'#c9e0ff');g.addColorStop(1,'#eef5ff');
+  x.fillStyle=g;x.fillRect(0,0,Wd,headH);
+  x.restore();
+  x.textAlign='left';x.textBaseline='alphabetic';
+  x.fillStyle='#1b3a6b';x.font='bold 22px '+CF;
+  x.fillText('报价单',pad,48);
+  x.fillStyle='#5b7ba6';x.font='12px '+CF;
+  x.fillText(meta.appTitle||'',pad,72);
+  var rows=[['报价品类',catName],['客户角色',roleName],['报价生成时间',timeStr]];
+  var y=metaY0;
+  rows.forEach(function(r){
+    x.textAlign='left';x.textBaseline='middle';
+    x.fillStyle='#8a94a6';x.font='12px '+CF;
+    x.fillText(r[0],pad,y);
+    x.fillStyle='#2b3440';x.font='13px '+CF;
+    x.fillText(String(r[1]),104,y);
+    y+=metaGap;
+  });
+  x.strokeStyle='#e8edf5';x.lineWidth=1;
+  x.beginPath();x.moveTo(pad,divY);x.lineTo(Wd-pad,divY);x.stroke();
+  var ry=rowsTop+rowH/2;
+  lines.forEach(function(l,i){
+    x.textBaseline='middle';
+    x.textAlign='left';x.fillStyle='#2b3440';x.font='13px '+CF;
+    x.fillText(l.name,pad,ry);
+    x.textAlign='right';x.fillStyle='#1b3a6b';x.font='bold 13px '+CF;
+    x.fillText(fmt(l.amt),Wd-pad,ry);
+    if(i<lines.length-1){
+      x.strokeStyle='#f0f4fa';x.beginPath();x.moveTo(pad,ry+rowH/2);x.lineTo(Wd-pad,ry+rowH/2);x.stroke();
+    }
+    ry+=rowH;
+  });
+  x.beginPath();x.moveTo(pad,div2Y);x.lineTo(Wd-pad,div2Y);x.stroke();
+  x.textBaseline='middle';
+  x.textAlign='left';x.fillStyle='#5b7ba6';x.font='14px '+CF;
+  x.fillText('合计总价',pad,totalCY);
+  x.textAlign='right';x.fillStyle='#2f7cf6';x.font='bold 26px '+CF;
+  x.fillText(fmt(total),Wd-pad,totalCY-1);
+  if(meta.watermark){
+    x.save();
+    x.beginPath();roundRect(x,0,0,Wd,Hd,20);x.clip();
+    x.translate(Wd/2,Hd/2);x.rotate(-30*Math.PI/180);
+    x.fillStyle='rgba(47,124,246,0.07)';x.font='bold 34px '+CF;x.textAlign='center';x.textBaseline='middle';
+    for(var gy=-Hd;gy<Hd;gy+=90){
+      for(var gx=-Wd;gx<Wd;gx+=240){x.fillText(meta.watermark,gx,gy)}
+    }
+    x.restore();
+  }
+  x.beginPath();roundRect(x,0.5,0.5,Wd-1,Hd-1,20);
+  x.strokeStyle='rgba(31,80,170,0.15)';x.lineWidth=1;x.stroke();
+  return c;
+}
+$('btnImg').onclick=function(){
+  var mc=metaCat();
+  toast('正在生成图片…');
+  setTimeout(function(){
+    try{
+      var canvas=drawCard(quoteLines,quoteTotal,mc.name,(meta.roles[st.role]||{name:'—'}).name,nowStr());
+      var done=function(url){
+        $('pngImg').src=url;
+        var a=$('pngDl');
+        a.href=url;
+        a.download='报价单_'+(meta.roles[st.role]||{name:''}).name+'_'+stamp()+'.png';
+        $('mBody').classList.add('hidden');
+        $('pngBody').classList.remove('hidden');
+        $('mcard').scrollTop=0;
+      };
+      if(canvas.toBlob){
+        canvas.toBlob(function(b){
+          if(b)done(URL.createObjectURL(b));
+          else done(canvas.toDataURL('image/png'));
+        },'image/png');
+      }else{
+        done(canvas.toDataURL('image/png'));
+      }
+    }catch(e){
+      toast('图片生成失败：'+(e&&e.message||e));
+    }
+  },50);
+};
+})();
+</script>
+</body>
+</html>
